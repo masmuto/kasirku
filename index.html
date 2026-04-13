@@ -72,20 +72,20 @@
                 <label class="block text-xs font-bold text-slate-400 uppercase mb-1 tracking-wider">Nama Pengguna</label>
                 <div class="relative">
                     <i data-lucide="user" class="absolute left-3 top-3.5 w-5 h-5 text-slate-300"></i>
-                    <input type="text" id="login-username" placeholder="Username" class="w-full pl-10 pr-4 py-3 border rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 transition-all bg-slate-50">
+                    <input type="text" id="login-username" onkeypress="handleEnter(event)" placeholder="Username" class="w-full pl-10 pr-4 py-3 border rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 transition-all bg-slate-50">
                 </div>
             </div>
             <div>
                 <label class="block text-xs font-bold text-slate-400 uppercase mb-1 tracking-wider">Kata Sandi</label>
                 <div class="relative">
                     <i data-lucide="lock" class="absolute left-3 top-3.5 w-5 h-5 text-slate-300"></i>
-                    <input type="password" id="login-password" placeholder="••••••••" class="w-full pl-10 pr-4 py-3 border rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 transition-all bg-slate-50">
+                    <input type="password" id="login-password" onkeypress="handleEnter(event)" placeholder="••••••••" class="w-full pl-10 pr-4 py-3 border rounded-xl outline-none focus:ring-2 focus:ring-indigo-500 transition-all bg-slate-50">
                 </div>
             </div>
             <button onclick="handleLogin()" class="w-full bg-indigo-600 text-white py-4 rounded-xl font-bold shadow-lg hover:bg-indigo-700 active:scale-95 transition-all flex items-center justify-center gap-2">
                 AUTHENTICATE <i data-lucide="key" class="w-4 h-4"></i>
             </button>
-            <p id="login-error" class="text-red-500 text-xs text-center font-bold hidden bg-red-50 py-2 rounded-lg border border-red-100">Username atau Password salah!</p>
+            <p id="login-error" class="text-red-500 text-xs text-center font-bold hidden bg-red-50 py-2 rounded-lg border border-red-100"></p>
         </div>
         <div class="text-center">
             <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">© 2024 Secure Retail System</p>
@@ -128,7 +128,7 @@
     </header>
 
     <div class="flex-1 overflow-y-auto p-6" id="content-container">
-      <!-- TAB DASHBOARD -->
+      <!-- DASHBOARD -->
       <section id="tab-dashboard" class="tab-content space-y-6">
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-100 flex items-center gap-4">
@@ -146,7 +146,7 @@
         </div>
       </section>
 
-      <!-- TAB POS -->
+      <!-- KASIR POS -->
       <section id="tab-pos" class="tab-content hidden h-full flex flex-col lg:flex-row gap-6">
         <div class="flex-1 flex flex-col gap-4 overflow-hidden">
             <div class="bg-white p-4 rounded-xl border flex gap-4 items-center">
@@ -175,7 +175,7 @@
         </div>
       </section>
 
-      <!-- TAB PENGIRIMAN -->
+      <!-- PENGIRIMAN -->
       <section id="tab-shipping" class="tab-content hidden space-y-6">
         <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
             <table class="w-full text-left text-sm">
@@ -185,7 +185,7 @@
         </div>
       </section>
 
-      <!-- TAB PRODUK MASTER -->
+      <!-- PRODUK MASTER -->
       <section id="tab-products" class="tab-content hidden space-y-6">
           <div class="bg-white border-b flex gap-8 px-4 overflow-x-auto hide-scroll no-print">
             <button onclick="switchProdSubMenu('list')" id="sub-prod-list-btn" class="py-4 active-submenu text-sm font-semibold">Daftar Produk</button>
@@ -202,13 +202,13 @@
           </div>
       </section>
 
-      <!-- TAB LAPORAN -->
+      <!-- LAPORAN -->
       <section id="tab-reports" class="tab-content hidden space-y-6">
           <div class="bg-white p-4 rounded-xl border flex gap-4"><input type="date" id="report-filter-start" onchange="renderSalesReport()" class="p-2 border rounded text-sm"><input type="date" id="report-filter-end" onchange="renderSalesReport()" class="p-2 border rounded text-sm"><button onclick="printSalesReport()" class="bg-slate-800 text-white px-4 rounded text-sm font-bold">Cetak PDF</button></div>
           <div class="bg-white rounded-xl shadow-sm border overflow-hidden"><table id="table-sales-report" class="w-full text-left text-sm"><thead class="bg-slate-50 border-b"><tr><th class="p-4">Tanggal</th><th class="p-4">ID</th><th class="p-4 text-right">Total</th></tr></thead><tbody id="table-sales-report-body"></tbody></table></div>
       </section>
 
-      <!-- TAB PENGATURAN -->
+      <!-- PENGATURAN -->
       <section id="tab-settings" class="tab-content hidden space-y-6">
         <div class="bg-white border-b flex gap-8 px-4 no-print">
             <button onclick="switchSetSubMenu('store')" id="sub-set-store-btn" class="py-4 active-submenu text-sm font-semibold">Profil Toko</button>
@@ -254,13 +254,25 @@
 <div id="print-section" class="hidden"></div>
 
 <script>
+  /**
+   * ==========================================
+   * KONFIGURASI API GOOGLE APPS SCRIPT (GAS)
+   * ==========================================
+   * Jika Anda menjalankan aplikasi ini secara eksternal (bukan di dalam Google Apps Script),
+   * tempelkan URL Web App Anda di bawah ini:
+   */
+  const GAS_API_URL = "https://script.google.com/macros/s/AKfycbzRhmYYpbQ5Y2U3V7jbQuC_2fGjE7GMOfCXA5EgCjyCPp76U0_mGB8algsmibI9lnBY/exec"; 
+  // Contoh: "https://script.google.com/macros/s/AKfyc.../exec"
+  // ==========================================
+
   let state = {
     produk: [], kategori: [], pelanggan: [], penjualanHistory: [], shippingHistory: [], opnameHistory: [], cart: [],
     settings: { nama: 'RETAILPRO', alamat: '', telp: '' },
     users: [],
     currentUser: null,
     heldTransactions: [],
-    posCategoryFilter: 'Semua'
+    posCategoryFilter: 'Semua',
+    dataLoaded: false
   };
 
   window.onload = () => { lucide.createIcons(); loadData(); };
@@ -277,27 +289,52 @@
         state.shippingHistory = res.data.shippingHistory || [];
         state.penjualanHistory = res.data.penjualanHistory || [];
         state.opnameHistory = res.data.opnameHistory || [];
+        state.dataLoaded = true;
         if(state.currentUser) renderAll();
       }
     }).getInitialData();
   }
 
-  // --- LOGIN ---
+  // --- LOGIN LOGIC ---
+  function showLoginError(msg) {
+    const err = document.getElementById('login-error');
+    err.innerText = msg;
+    err.classList.remove('hidden');
+    setTimeout(() => err.classList.add('hidden'), 4000);
+  }
+
+  function handleEnter(e) {
+    if (e.key === 'Enter') handleLogin();
+  }
+
   function handleLogin() {
-    const inputName = document.getElementById('login-username').value.trim().toLowerCase();
-    const inputPass = document.getElementById('login-password').value;
+    const usernameInput = document.getElementById('login-username');
+    const passwordInput = document.getElementById('login-password');
+    const inputName = usernameInput.value.trim().toLowerCase();
+    const inputPass = passwordInput.value.trim();
+
+    if (!inputName || !inputPass) {
+        showLoginError("Silakan isi username dan password!");
+        return;
+    }
+
+    if (!state.dataLoaded && state.users.length === 0) {
+        showLoginError("Data sedang dimuat, silakan tunggu sesaat...");
+        loadData();
+        return;
+    }
     
-    // Memperbaiki pengecekan dengan memastikan properti user konsisten
+    // Pencocokan data dengan pembersihan whitespace dan casting string
     const user = state.users.find(u => {
-        const uName = (u.Name || u.name || "").toLowerCase();
-        const uPass = String(u.Password || u.password || "");
+        const uName = (u.Name || u.name || "").toString().toLowerCase().trim();
+        const uPass = (u.Password || u.password || "").toString().trim();
         return uName === inputName && uPass === inputPass;
     });
 
     if (user) {
         state.currentUser = user;
         const displayName = user.Name || user.name || "User";
-        const displayRole = user.Role || user.role || "Role";
+        const displayRole = (user.Role || user.role || "Role").toString();
 
         document.getElementById('login-screen').classList.add('hidden');
         document.getElementById('main-app').classList.remove('hidden');
@@ -308,9 +345,8 @@
         setupNavigation(displayRole);
         renderAll();
     } else {
-        const err = document.getElementById('login-error');
-        err.classList.remove('hidden');
-        setTimeout(() => err.classList.add('hidden'), 3000);
+        showLoginError("Username atau Password salah!");
+        passwordInput.value = '';
     }
   }
 
@@ -324,7 +360,7 @@
 
   function setupNavigation(role) {
     const nav = document.getElementById('sidebar-nav');
-    const roleLower = role.toLowerCase();
+    const roleLower = role.toLowerCase().trim();
     let html = `<button onclick="switchTab('dashboard')" class="nav-link w-full flex items-center gap-3 p-3 rounded-lg hover:bg-indigo-800 transition active-nav" id="btn-dashboard"><i data-lucide="layout-dashboard"></i> Dashboard</button>`;
     
     if (roleLower === 'admin' || roleLower === 'kasir') {
@@ -358,7 +394,7 @@
     lucide.createIcons();
   }
 
-  // --- POS ---
+  // --- LOGIKA POS ---
   function renderPOSCategories() {
     const c = document.getElementById('pos-cat-filter');
     if(!c) return;
@@ -408,7 +444,7 @@
     }).processTransaction(payload);
   }
 
-  // --- CRUD TABLES ---
+  // --- TABEL CRUD ---
   function renderShippingTable() {
     const b = document.getElementById('table-shipping-body');
     if(!b) return;
@@ -424,6 +460,16 @@
     const b = document.getElementById('report-stock-body');
     if(!b) return;
     b.innerHTML = state.produk.map(p => `<tr class="border-b"><td class="p-4 font-bold text-slate-700">${p.Nama}</td><td class="p-4 text-center font-bold ${Number(p.Stok) <= 5 ? 'text-red-500' : 'text-slate-600'}">${p.Stok}</td></tr>`).join('');
+  }
+  function renderCategoryTable() {
+    const b = document.getElementById('table-categories-body');
+    if(!b) return;
+    b.innerHTML = state.kategori.map(c => `<tr class="border-b"><td class="p-4">${c['Nama Kategori']}</td></tr>`).join('');
+  }
+  function renderSalesReport() {
+    const b = document.getElementById('table-sales-report-body');
+    if(!b) return;
+    b.innerHTML = state.penjualanHistory.map(s => `<tr class="border-b"><td class="p-4 text-xs font-mono text-slate-400">${s.Tanggal}</td><td class="p-4 font-bold text-xs">${s.OrderID}</td><td class="p-4 text-right font-bold text-indigo-600">${formatIDR(s.Total)}</td></tr>`).join('');
   }
   function renderUsersTable() {
     const b = document.getElementById('table-users-body');
@@ -444,7 +490,7 @@
   }
   function deleteUser(id) { if(confirm("Hapus user ini?")) { showSpinner(true); google.script.run.withSuccessHandler(() => { showSpinner(false); loadData(); }).deleteUser(id); } }
 
-  // --- OTHERS ---
+  // --- LAIN-LAIN ---
   function formatIDR(n) { return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(n); }
   function showSpinner(s) { document.getElementById('loading-spinner')?.classList.toggle('hidden', !s); }
   function updateDashboard() {
@@ -461,7 +507,36 @@
     document.getElementById('tab-title').innerText = tabId.charAt(0).toUpperCase() + tabId.slice(1);
     lucide.createIcons();
   }
-  function populateSelects() {}
+  
+  function switchProdSubMenu(type) {
+    ['list', 'category', 'stock-view', 'opname', 'opname-report'].forEach(s => document.getElementById(`sub-prod-${s}`)?.classList.add('hidden'));
+    document.getElementById(`sub-prod-${type}`)?.classList.remove('hidden');
+    document.querySelectorAll('#tab-products button').forEach(b => b.classList.remove('active-submenu'));
+    document.getElementById(`sub-prod-${type}-btn`)?.classList.add('active-submenu');
+    lucide.createIcons();
+  }
+
+  function switchSetSubMenu(type) {
+    ['store', 'users', 'database'].forEach(m => document.getElementById(`sub-set-${m}`).classList.add('hidden'));
+    document.getElementById(`sub-set-${type}`).classList.remove('hidden');
+    document.querySelectorAll('#tab-settings button').forEach(b => b.classList.remove('active-submenu'));
+    document.getElementById(`sub-set-${type}-btn`).classList.add('active-submenu');
+    lucide.createIcons();
+  }
+
+  function saveStoreSettings() {
+    const data = { nama: document.getElementById('set-store-name').value, alamat: document.getElementById('set-store-address').value, telp: document.getElementById('set-store-phone').value };
+    showSpinner(true);
+    google.script.run.withSuccessHandler(() => { showSpinner(false); loadData(); alert("Pengaturan disimpan!"); }).updateSettings(data);
+  }
+
+  function populateSelects() {
+    if(document.getElementById('set-store-name')) {
+        document.getElementById('set-store-name').value = state.settings.nama;
+        document.getElementById('set-store-address').value = state.settings.alamat;
+        document.getElementById('set-store-phone').value = state.settings.telp;
+    }
+  }
 </script>
 
 </body>
